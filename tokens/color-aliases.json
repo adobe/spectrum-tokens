@@ -473,7 +473,7 @@
   "neutral-subdued-content-color-key-focus": {
     "value": "{gray-800}"
   },
-  "accent-content-color": {
+  "accent-content-color-default": {
     "value": "{accent-color-900}"
   },
   "accent-content-color-hover": {
@@ -485,7 +485,7 @@
   "accent-content-color-key-focus": {
     "value": "{accent-color-1000}"
   },
-  "negative-content-color": {
+  "negative-content-color-default": {
     "value": "{negative-color-900}"
   },
   "negative-content-color-hover": {

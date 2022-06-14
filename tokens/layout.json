@@ -149,10 +149,10 @@
         "value": "rgba(0, 0, 0, 0.15)"
       },
       "dark": {
-        "value": "rgba(0, 0, 0, 0.50)"
+        "value": "rgba(0, 0, 0, 0.5)"
       },
       "darkest": {
-        "value": "rgba(0, 0, 0, 0.80)"
+        "value": "rgba(0, 0, 0, 0.8)"
       }
     }
   },
@@ -579,7 +579,7 @@
   "component-pill-edge-to-visual-100": {
     "sets": {
       "desktop": {
-        "value": "17px"
+        "value": "14px"
       },
       "mobile": {
         "value": "17px"
