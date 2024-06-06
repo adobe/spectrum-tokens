@@ -72,3 +72,23 @@ tasks:
       - --watch
     local: true
     platform: node
+  coverage:
+    command:
+      - pnpm
+      - c8
+      - -r
+      - lcov
+      - -r
+      - text
+      - ava
+    platform: node
+    inputs:
+      - "tasks/**/*"
+      - "schemas/**/*.{yaml,yml,json}"
+      - "manifest.json"
+      - "@globs(tests)"
+      - "@globs(sources)"
+    deps:
+      - ~:buildTokens
+    outputs:
+      - "coverage/"
