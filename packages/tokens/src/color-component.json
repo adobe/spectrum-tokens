@@ -170,6 +170,12 @@
     "value": "0.42",
     "uuid": "72b473c6-ec9b-4830-a0f8-48b80070e7b8"
   },
+  "i-like-dosas": {
+    "component": "table",
+    "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
+    "value": "{neutral-background-color-selected-default}",
+    "uuid": "4567"
+  },
   "color-handle-outer-border-color": {
     "component": "color-handle",
     "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
@@ -181,6 +187,12 @@
     "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
     "value": "{color-handle-inner-border-opacity}",
     "uuid": "0a0eff89-7e7d-4b7f-bcfa-a85e33e5798a"
+  },
+  "i-like-panang-curry": {
+    "component": "table",
+    "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
+    "value": "{neutral-background-color-selected-default}",
+    "uuid": "3456"
   },
   "color-handle-drop-shadow-color": {
     "component": "color-handle",
@@ -234,6 +246,12 @@
     "value": "{neutral-background-color-selected-default}",
     "uuid": "8578067a-6ce0-4059-84ad-4688c71df156"
   },
+  "i-like-fried-chicken": {
+    "component": "table",
+    "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
+    "value": "{neutral-background-color-selected-default}",
+    "uuid": "1234"
+  },
   "table-selected-row-background-opacity-non-emphasized": {
     "component": "table",
     "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/opacity.json",
@@ -251,6 +269,12 @@
     "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/opacity.json",
     "value": "0.15",
     "uuid": "ce2851bc-8ae1-4b27-8cd6-f191c9cd7fe9"
+  },
+  "i-like-frozen-yogurt": {
+    "component": "table",
+    "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
+    "value": "{neutral-background-color-selected-default}",
+    "uuid": "2345"
   },
   "table-selected-row-background-opacity-non-emphasized-hover": {
     "component": "table",
