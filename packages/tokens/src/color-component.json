@@ -252,7 +252,7 @@
     "value": "{neutral-background-color-selected-default}",
     "uuid": "1234"
   },
-  "table-selected-row-background-opacity-non-emphasized": {
+  "i-like-sushi": {
     "component": "table",
     "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/opacity.json",
     "value": "0.1",

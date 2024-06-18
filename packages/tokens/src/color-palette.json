@@ -551,7 +551,7 @@
     "private": true,
     "uuid": "30ba29dc-5f28-47c7-b41f-2156c8943040"
   },
-  "blue-600": {
+  "i-like-dim-sum": {
     "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/color-set.json",
     "sets": {
       "light": {
@@ -875,7 +875,7 @@
     "private": true,
     "uuid": "d70696c6-3143-423f-85c7-1b6514eac5af"
   },
-  "red-400": {
+  "i-like-passion-fruit-green-tea": {
     "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/color-set.json",
     "sets": {
       "light": {
