@@ -47,6 +47,8 @@
   "black-font-weight": {
     "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/font-weight.json",
     "value": "black",
+    "deprecated": true,
+    "deprecated_comment": "here is an another totally informative comment",
     "uuid": "e2f23ca1-802b-40a2-a211-33090f9a043e"
   },
   "italic-font-style": {
@@ -217,6 +219,8 @@
         "uuid": "bdfae93d-ae49-456b-af54-8620ea976ca8"
       }
     },
+    "deprecated": true,
+    "deprecated_comment": "this is totally not not deprecated",
     "uuid": "3b3711a6-44fd-44b5-b273-e2c775a15986"
   },
   "font-size-900": {

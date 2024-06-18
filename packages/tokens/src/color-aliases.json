@@ -304,7 +304,7 @@
       },
       "express": {
         "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
-        "value": "{gray-900}",
+        "value": "{updated}",
         "deprecated": true,
         "deprecated_comment": "Express will merge with Spectrum with the release of Spectrum 2.",
         "uuid": "bf3de5f6-665c-4a6a-b238-e767b7240fd8"
@@ -368,11 +368,6 @@
         "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
         "value": "{gray-300}",
         "uuid": "338e2fda-0da2-4a52-b718-ca0ca50e88f9"
-      },
-      "darkest": {
-        "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
-        "value": "{gray-300}",
-        "uuid": "2d72c9fc-22d0-4e4d-9b00-fae4b30a47b5"
       },
       "wireframe": {
         "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
@@ -478,11 +473,6 @@
         "value": "{accent-color-400}",
         "uuid": "7c891ae9-00a1-4b9f-8a77-d582a9d2addb"
       },
-      "darkest": {
-        "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
-        "value": "{accent-color-500}",
-        "uuid": "9e140a94-c11f-470b-b7af-49880e58d4ce"
-      },
       "wireframe": {
         "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
         "value": "{accent-color-1000}",
@@ -508,6 +498,11 @@
         "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
         "value": "{accent-color-400}",
         "uuid": "e2c0de7e-d271-4b2c-9393-d864a95732e6"
+      },
+      "definite-a-real-property": {
+        "$schema": "adobe link",
+        "value": "woohoo!",
+        "uuid": "7890"
       },
       "wireframe": {
         "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
@@ -575,11 +570,11 @@
     "uuid": "f95deae9-0726-4fb5-be41-0680d40439ec"
   },
   "informative-background-color-hover": {
-    "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/color-set.json",
+    "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/i-like-koalas.json",
     "sets": {
       "light": {
         "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
-        "value": "{informative-color-1000}",
+        "value": "{some-value-was-changed}",
         "uuid": "06dcb775-28b2-454e-89ce-fda34f30c7d7"
       },
       "dark": {

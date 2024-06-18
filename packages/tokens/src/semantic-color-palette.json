@@ -254,6 +254,8 @@
   "informative-color-100": {
     "$schema": "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
     "value": "{blue-100}",
+    "deprecated": true,
+    "deprecated_comment": "here is a totally informative comment",
     "uuid": "b9fc8b82-275a-49fe-98d7-95f136b48772"
   },
   "informative-color-200": {
