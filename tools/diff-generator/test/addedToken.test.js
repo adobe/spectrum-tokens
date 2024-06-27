@@ -180,7 +180,12 @@ test("basic test to see if new token was added", (t) => {
   const diff = detailedDiff(original, updated);
   const renamed = detectRenamedTokens(original, diff.added);
   t.deepEqual(
-    detectNewTokens(renamed, detectDeprecatedTokens(renamed, diff), diff.added),
+    detectNewTokens(
+      renamed,
+      detectDeprecatedTokens(renamed, diff),
+      diff.added,
+      original,
+    ),
     expectedOneToken,
   );
 });
@@ -189,7 +194,12 @@ test("several tokens in each schema test to see if new token was added", (t) => 
   const diff = detailedDiff(originalSeveral, updatedSeveral);
   const renamed = detectRenamedTokens(originalSeveral, diff.added);
   t.deepEqual(
-    detectNewTokens(renamed, detectDeprecatedTokens(renamed, diff), diff.added),
+    detectNewTokens(
+      renamed,
+      detectDeprecatedTokens(renamed, diff),
+      diff.added,
+      originalSeveral,
+    ),
     expectedSeveral,
   );
 });
@@ -198,7 +208,12 @@ test("adding several new and renamed tokens test", (t) => {
   const diff = detailedDiff(originalEntireSchema, addedRenamedTokens);
   const renamed = detectRenamedTokens(originalEntireSchema, diff.added);
   t.deepEqual(
-    detectNewTokens(renamed, detectDeprecatedTokens(renamed, diff), diff.added),
+    detectNewTokens(
+      renamed,
+      detectDeprecatedTokens(renamed, diff),
+      diff.added,
+      originalEntireSchema,
+    ),
     expectedNotRenamed,
   );
 });
@@ -207,7 +222,12 @@ test("adding a set token test", (t) => {
   const diff = detailedDiff(basicSetToken, addedSetToken);
   const renamed = detectRenamedTokens(basicSetToken, diff.added);
   t.deepEqual(
-    detectNewTokens(renamed, detectDeprecatedTokens(renamed, diff), diff.added),
+    detectNewTokens(
+      renamed,
+      detectDeprecatedTokens(renamed, diff),
+      diff.added,
+      basicSetToken,
+    ),
     expectedAddedSetToken,
   );
 });
@@ -216,7 +236,12 @@ test("adding several set tokens out of order", (t) => {
   const diff = detailedDiff(basicSetToken, addedSeveralSetTokens);
   const renamed = detectRenamedTokens(basicSetToken, diff.added);
   t.deepEqual(
-    detectNewTokens(renamed, detectDeprecatedTokens(renamed, diff), diff.added),
+    detectNewTokens(
+      renamed,
+      detectDeprecatedTokens(renamed, diff),
+      diff.added,
+      basicSetToken,
+    ),
     expectedSeveralAddedSetTokens,
   );
 });

@@ -13,6 +13,8 @@ governing permissions and limitations under the License.
 import test from "ava";
 import detectUpdatedTokens from "../src/lib/updated-token-detection.js";
 import detectRenamedTokens from "../src/lib/renamed-token-detection.js";
+import detectNewTokens from "../src/lib/added-token-detection.js";
+import detectDeprecatedTokens from "../src/lib/deprecated-token-detection.js";
 import { detailedDiff } from "deep-object-diff";
 import original from "./test-schemas/basic-original-token.json" with { type: "json" };
 import updatedToken from "./test-schemas/basic-updated-token.json" with { type: "json" };
@@ -22,131 +24,416 @@ import tokenWithUpdatedSet from "./test-schemas/basic-updated-set-token.json" wi
 import severalSetTokens from "./test-schemas/several-set-tokens.json" with { type: "json" };
 import severalUpdatedSetTokens from "./test-schemas/several-updated-set-tokens.json" with { type: "json" };
 import severalRenamedUpdatedSetTokens from "./test-schemas/several-renamed-updated-set-tokens.json" with { type: "json" };
+import basicSetTokenProperty from "./test-schemas/basic-set-token-property.json" with { type: "json" };
+import addedPropertySetToken from "./test-schemas/added-property-set-token.json" with { type: "json" };
+import addedDeletedPropertySetToken from "./test-schemas/added-deleted-set-token-property.json" with { type: "json" };
 
 const expected = {
-  "swatch-border-color": { value: "{blue-200}" },
+  added: {},
+  deleted: {},
+  updated: {
+    "swatch-border-color": {
+      value: {
+        "new-value": "{blue-200}",
+        path: "value",
+        "original-value": "{gray-900}",
+      },
+    },
+  },
 };
 
 const expectedUpdatedSeveralProperties = {
-  "swatch-border-color": {
-    $schema:
-      "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/color.json",
-    value: "{blue-200}",
+  added: {},
+  deleted: {},
+  updated: {
+    "swatch-border-color": {
+      $schema: {
+        "new-value":
+          "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/color.json",
+        path: "$schema",
+        "original-value":
+          "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
+      },
+      value: {
+        "new-value": "{blue-200}",
+        path: "value",
+        "original-value": "{gray-900}",
+      },
+    },
   },
 };
 
 const expectedUpdatedSet = {
-  "overlay-opacity": {
-    sets: {
-      darkest: {
-        value: "0.8",
-      },
-      light: {
-        $schema:
-          "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/color.json",
-      },
-      wireframe: {
-        $schema:
-          "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/wireframe.json",
-        value: "0",
+  added: {},
+  deleted: {},
+  updated: {
+    "overlay-opacity": {
+      sets: {
+        darkest: {
+          value: {
+            "new-value": "0.8",
+            "original-value": "0.6",
+            path: "sets.darkest.value",
+          },
+        },
+        light: {
+          $schema: {
+            "new-value":
+              "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/color.json",
+            "original-value":
+              "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/opacity.json",
+            path: "sets.light.$schema",
+          },
+        },
+        wireframe: {
+          $schema: {
+            "new-value":
+              "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/wireframe.json",
+            "original-value":
+              "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/opacity.json",
+            path: "sets.wireframe.$schema",
+          },
+          value: {
+            "new-value": "0",
+            "original-value": "0.4",
+            path: "sets.wireframe.value",
+          },
+        },
       },
     },
   },
 };
 
 const expectedSeveralUpdatedSet = {
-  "help-text-top-to-workflow-icon-medium": {
-    $schema:
-      "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/token-set.json",
-    sets: {
-      desktop: {
-        $schema:
-          "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/changing-two-schemas.json",
+  added: {},
+  deleted: {},
+  updated: {
+    "help-text-top-to-workflow-icon-medium": {
+      $schema: {
+        "new-value":
+          "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/token-set.json",
+        path: "$schema",
+        "original-value":
+          "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/scale-set.json",
       },
-      mobile: {
-        value: "9px",
+      sets: {
+        desktop: {
+          $schema: {
+            "new-value":
+              "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/changing-two-schemas.json",
+            "original-value":
+              "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/dimension.json",
+            path: "sets.desktop.$schema",
+          },
+        },
+        mobile: {
+          value: {
+            "new-value": "9px",
+            "original-value": "4px",
+            path: "sets.mobile.value",
+          },
+        },
       },
     },
-  },
-  "status-light-top-to-dot-large": {
-    sets: {
-      desktop: {
-        value: "20px",
+    "status-light-top-to-dot-large": {
+      sets: {
+        desktop: {
+          value: {
+            "new-value": "20px",
+            "original-value": "15px",
+            path: "sets.desktop.value",
+          },
+        },
       },
     },
   },
 };
 
 const expectedUpdatedSetWithRename = {
-  "help-text-top-to-workflow-icon-medium": {
-    sets: {
-      desktop: {
-        value: "7px",
+  added: {},
+  deleted: {},
+  updated: {
+    "help-text-top-to-workflow-icon-medium": {
+      sets: {
+        desktop: {
+          value: {
+            "new-value": "7px",
+            "original-value": "3px",
+            path: "sets.desktop.value",
+          },
+        },
       },
     },
-  },
-  "i-like-fish-tacos": {
-    $schema:
-      "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/scaly-fish.json",
-    sets: {
-      mobile: {
-        value: "15px",
+    "i-like-fish-tacos": {
+      $schema: {
+        "new-value":
+          "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/scaly-fish.json",
+        "original-value":
+          "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/scale-set.json",
+        path: "$schema",
+      },
+      sets: {
+        mobile: {
+          value: {
+            "new-value": "15px",
+            "original-value": "12px",
+            path: "sets.mobile.value",
+          },
+        },
       },
     },
   },
 };
 
+const expectedAddedProperty = {
+  added: {
+    "celery-background-color-default": {
+      sets: {
+        "random-property": {
+          $schema: {
+            "new-value":
+              "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
+            path: "sets.random-property.$schema",
+          },
+          value: {
+            "new-value": "{spinach-100}",
+            path: "sets.random-property.value",
+          },
+          uuid: {
+            "new-value": "1234",
+            path: "sets.random-property.uuid",
+          },
+        },
+      },
+    },
+  },
+  deleted: {},
+  updated: {},
+};
+
+const expectedDeletedProperty = {
+  added: {},
+  deleted: {
+    "celery-background-color-default": {
+      sets: {
+        "random-property": {
+          $schema: {
+            "new-value":
+              "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
+            path: "sets.random-property.$schema",
+          },
+          value: {
+            "new-value": "{spinach-100}",
+            path: "sets.random-property.value",
+          },
+          uuid: {
+            "new-value": "1234",
+            path: "sets.random-property.uuid",
+          },
+        },
+      },
+    },
+  },
+  updated: {},
+};
+
+const expectedAddedDeletedProperty = {
+  added: {
+    "celery-background-color-default": {
+      sets: {
+        "fun-times": {
+          $schema: {
+            "new-value":
+              "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
+            path: "sets.fun-times.$schema",
+          },
+          uuid: {
+            "new-value": "2345",
+            path: "sets.fun-times.uuid",
+          },
+          value: {
+            "new-value": "{fun}",
+            path: "sets.fun-times.value",
+          },
+        },
+      },
+    },
+  },
+  deleted: {
+    "celery-background-color-default": {
+      sets: {
+        darkest: {
+          $schema: {
+            "new-value":
+              "https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json",
+            path: "sets.darkest.$schema",
+          },
+          uuid: {
+            "new-value": "a9ab7a59-9cab-47fb-876d-6f0af93dc5df",
+            path: "sets.darkest.uuid",
+          },
+          value: {
+            "new-value": "{celery-800}",
+            path: "sets.darkest.value",
+          },
+        },
+      },
+    },
+  },
+  updated: {},
+};
+
 test("basic test to check if updated token is detected", (t) => {
+  const diff = detailedDiff(original, updatedToken);
+  const renamed = detectRenamedTokens(original, updatedToken);
+  const deprecated = detectDeprecatedTokens(renamed, diff);
+  const added = detectNewTokens(renamed, deprecated, diff.added, original);
+
   t.deepEqual(
-    detectUpdatedTokens(
-      detectRenamedTokens(original, updatedToken),
-      original,
-      detailedDiff(original, updatedToken),
-    ),
+    detectUpdatedTokens(renamed, original, diff, added, deprecated),
     expected,
   );
 });
 
 test("updated more than one property of a token", (t) => {
+  const diff = detailedDiff(original, updatedSeveralProperties);
+  const renamed = detectRenamedTokens(original, updatedSeveralProperties);
+  const deprecated = detectDeprecatedTokens(renamed, diff);
+  const added = detectNewTokens(renamed, deprecated, diff.added, original);
+
   t.deepEqual(
-    detectUpdatedTokens(
-      detectRenamedTokens(original, updatedSeveralProperties),
-      original,
-      detailedDiff(original, updatedSeveralProperties),
-    ),
+    detectUpdatedTokens(renamed, original, diff, added, deprecated),
     expectedUpdatedSeveralProperties,
   );
 });
 
 test("testing basic token with updates to its set property", (t) => {
+  const diff = detailedDiff(tokenWithSet, tokenWithUpdatedSet);
+  const renamed = detectRenamedTokens(tokenWithSet, tokenWithUpdatedSet);
+  const deprecated = detectDeprecatedTokens(renamed, diff);
+  const added = detectNewTokens(renamed, deprecated, diff.added, tokenWithSet);
+
   t.deepEqual(
-    detectUpdatedTokens(
-      detectRenamedTokens(tokenWithSet, tokenWithUpdatedSet),
-      tokenWithSet,
-      detailedDiff(tokenWithSet, tokenWithUpdatedSet),
-    ),
+    detectUpdatedTokens(renamed, tokenWithSet, diff, added, deprecated),
     expectedUpdatedSet,
   );
 });
 
 test("testing several tokens with updates to its set property", (t) => {
+  const diff = detailedDiff(severalSetTokens, severalUpdatedSetTokens);
+  const renamed = detectRenamedTokens(
+    severalSetTokens,
+    severalUpdatedSetTokens,
+  );
+  const deprecated = detectDeprecatedTokens(renamed, diff);
+  const added = detectNewTokens(
+    renamed,
+    deprecated,
+    diff.added,
+    severalSetTokens,
+  );
+
   t.deepEqual(
-    detectUpdatedTokens(
-      detectRenamedTokens(severalSetTokens, severalUpdatedSetTokens),
-      severalSetTokens,
-      detailedDiff(severalSetTokens, severalUpdatedSetTokens),
-    ),
+    detectUpdatedTokens(renamed, severalSetTokens, diff, added, deprecated),
     expectedSeveralUpdatedSet,
   );
 });
 
 test("testing several tokens with updates to its set property and renames", (t) => {
+  const diff = detailedDiff(severalSetTokens, severalRenamedUpdatedSetTokens);
+  const renamed = detectRenamedTokens(
+    severalSetTokens,
+    severalRenamedUpdatedSetTokens,
+  );
+  const deprecated = detectDeprecatedTokens(renamed, diff);
+  const added = detectNewTokens(
+    renamed,
+    deprecated,
+    diff.added,
+    severalSetTokens,
+  );
+
+  t.deepEqual(
+    detectUpdatedTokens(renamed, severalSetTokens, diff, added, deprecated),
+    expectedUpdatedSetWithRename,
+  );
+});
+
+test("testing adding a property to a token with sets", (t) => {
+  const diff = detailedDiff(basicSetTokenProperty, addedPropertySetToken);
+  const renamed = detectRenamedTokens(
+    basicSetTokenProperty,
+    addedPropertySetToken,
+  );
+  const deprecated = detectDeprecatedTokens(renamed, diff);
+  const added = detectNewTokens(
+    renamed,
+    deprecated,
+    diff.added,
+    basicSetTokenProperty,
+  );
+
   t.deepEqual(
     detectUpdatedTokens(
-      detectRenamedTokens(severalSetTokens, severalRenamedUpdatedSetTokens),
-      severalSetTokens,
-      detailedDiff(severalSetTokens, severalRenamedUpdatedSetTokens),
+      renamed,
+      basicSetTokenProperty,
+      diff,
+      added,
+      deprecated,
     ),
-    expectedUpdatedSetWithRename,
+    expectedAddedProperty,
+  );
+});
+
+test("testing deleting a property to a token with sets", (t) => {
+  const diff = detailedDiff(addedPropertySetToken, basicSetTokenProperty);
+  const renamed = detectRenamedTokens(
+    addedPropertySetToken,
+    basicSetTokenProperty,
+  );
+  const deprecated = detectDeprecatedTokens(renamed, diff);
+  const added = detectNewTokens(
+    renamed,
+    deprecated,
+    diff.added,
+    addedPropertySetToken,
+  );
+  t.deepEqual(
+    detectUpdatedTokens(
+      renamed,
+      addedPropertySetToken,
+      diff,
+      added,
+      deprecated,
+    ),
+    expectedDeletedProperty,
+  );
+});
+
+test("testing adding and deleting a property to a token with sets", (t) => {
+  const diff = detailedDiff(
+    basicSetTokenProperty,
+    addedDeletedPropertySetToken,
+  );
+  const renamed = detectRenamedTokens(
+    basicSetTokenProperty,
+    addedDeletedPropertySetToken,
+  );
+  const deprecated = detectDeprecatedTokens(renamed, diff);
+  const added = detectNewTokens(
+    renamed,
+    deprecated,
+    diff.added,
+    basicSetTokenProperty,
+  );
+  t.deepEqual(
+    detectUpdatedTokens(
+      renamed,
+      basicSetTokenProperty,
+      diff,
+      added,
+      deprecated,
+    ),
+    expectedAddedDeletedProperty,
   );
 });

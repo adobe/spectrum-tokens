@@ -33,7 +33,8 @@ export default function detectDeprecatedTokens(renamedTokens, changes) {
     }
   });
   Object.keys(changes.deleted).forEach((token) => {
-    if (possibleMistakenRevert[token] === undefined) {
+    const t = possibleMistakenRevert[token]; // a token marked as deleted
+    if (t === undefined || (typeof t !== "string" && !("deprecated" in t))) {
       delete possibleMistakenRevert[token];
     }
   });

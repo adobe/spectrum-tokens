@@ -30,9 +30,16 @@ export default function tokenDiff(original, updated) {
     renamedTokens,
     deprecatedTokens,
     changes.added,
+    original,
   );
   const deletedTokens = detectDeletedTokens(renamedTokens, changes.deleted);
-  const updatedTokens = detectUpdatedTokens(renamedTokens, original, changes);
+  const updatedTokens = detectUpdatedTokens(
+    renamedTokens,
+    original,
+    changes,
+    newTokens,
+    deprecatedTokens,
+  );
   return formatResult(
     renamedTokens,
     deprecatedTokens,

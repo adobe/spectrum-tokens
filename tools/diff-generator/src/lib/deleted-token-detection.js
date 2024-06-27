@@ -20,6 +20,12 @@ governing permissions and limitations under the License.
 export default function detectDeletedTokens(renamed, deleted) {
   const deletedTokens = { ...deleted };
   Object.keys(deleted).forEach((token) => {
+    if (
+      deletedTokens[token] !== undefined &&
+      deletedTokens[token].deprecated === undefined
+    ) {
+      delete deletedTokens[token];
+    }
     Object.keys(renamed).forEach((renamedToken) => {
       if (
         (deletedTokens[token] !== undefined &&

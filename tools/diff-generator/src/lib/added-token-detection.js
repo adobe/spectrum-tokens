@@ -18,12 +18,18 @@ governing permissions and limitations under the License.
  * @returns {object} addedTokens - a JSON object containing the added tokens
  */
 
-export default function detectNewTokens(renamed, deprecatedTokens, added) {
+export default function detectNewTokens(
+  renamed,
+  deprecatedTokens,
+  added,
+  original,
+) {
   const addedTokens = { ...added };
   Object.keys(added).forEach((token) => {
     if (
+      deprecatedTokens.deprecated[token] !== undefined ||
       renamed[token] !== undefined ||
-      deprecatedTokens.deprecated[token] !== undefined
+      original[token] !== undefined
     ) {
       delete addedTokens[token];
     }

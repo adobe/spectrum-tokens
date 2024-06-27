@@ -18,18 +18,154 @@ import { detailedDiff } from "deep-object-diff";
  * @param {object} changes - the changed token data
  * @returns {object} updatedTokens - a JSON object containing the updated tokens (with new name, if renamed)
  */
-export default function detectUpdatedTokens(renamed, original, changes) {
-  const updatedTokens = { ...changes.updated };
+export default function detectUpdatedTokens(
+  renamed,
+  original,
+  changes,
+  newTokens,
+  deprecatedTokens,
+) {
+  const updatedTokens = {
+    added: {},
+    deleted: {},
+    updated: { ...changes.updated },
+  };
   Object.keys(changes.added).forEach((token) => {
     if (renamed[token] !== undefined) {
-      const renamedTokenDiff = detailedDiff(
+      const tokenDiff = detailedDiff(
         original[renamed[token]["old-name"]],
         changes.added[token],
       ).updated;
-      if (Object.keys(renamedTokenDiff).length !== 0) {
-        updatedTokens[token] = renamedTokenDiff;
+      if (Object.keys(tokenDiff).length !== 0) {
+        updatedTokens.updated[token] = tokenDiff;
       }
+    } else if (
+      newTokens[token] === undefined &&
+      original[token] !== undefined &&
+      deprecatedTokens.deprecated[token] === undefined
+    ) {
+      updatedTokens.added[token] = changes.added[token];
+      formatJSON(updatedTokens.added[token], token, original, renamed, false);
     }
   });
+  Object.keys(changes.deleted).forEach((token) => {
+    const t = changes.deleted[token];
+    if (t !== undefined && !("deprecated" in t)) {
+      const tokenDiff = detailedDiff(
+        t, // switching the order to easily get change
+        original[token],
+      ).updated;
+      updatedTokens.deleted[token] = tokenDiff;
+      formatJSON(updatedTokens.deleted[token], token, original, renamed, false);
+    }
+  });
+  Object.keys(updatedTokens.updated).forEach((token) => {
+    formatJSON(updatedTokens.updated[token], token, original, renamed, true);
+  });
   return updatedTokens;
+}
+
+/**
+ * Appends original token properties to updatedTokens JSON
+ * @param {object} tokens - the updated tokens (added, deleted, or updated)
+ * @param {string} properties - the path containing all the keys required to traverse through to get to value
+ * @param {object} original - the original token
+ * @param {object} renamed - a JSON object containing the renamed tokens
+ * @param {boolean} update - a boolean indicating whether token property is added, deleted, or updated
+ */
+function formatJSON(tokens, properties, original, renamed, update) {
+  if (renamed[properties] !== undefined) {
+    includeOldProperties(
+      tokens,
+      tokens,
+      properties,
+      original,
+      original[renamed[properties]["old-name"]],
+      renamed,
+      update,
+    );
+  } else {
+    includeOldProperties(
+      tokens,
+      tokens,
+      properties,
+      original,
+      original[properties],
+      renamed,
+      update,
+    );
+  }
+}
+
+/**
+ * Traverses original and result token to insert the original value, path to the value, and new value
+ * @param {object} token - the current token from updatedTokens
+ * @param {object} curTokenLevel - the current key
+ * @param {string} properties - a string containing the path to get to the value
+ * @param {object} originalToken - the original token
+ * @param {object} curOriginalLevel - the current key for original token
+ * @param {object} renamed - the renamed tokens
+ */
+function includeOldProperties(
+  token,
+  curTokenLevel,
+  properties,
+  originalToken,
+  curOriginalLevel,
+  renamed,
+  update,
+) {
+  Object.keys(curTokenLevel).forEach((property) => {
+    if (
+      property === "path" ||
+      property === "new-value" ||
+      property === "original-value"
+    ) {
+      return;
+    }
+    if (typeof curTokenLevel[property] === "string") {
+      const newValue = curTokenLevel[property];
+      const path = !properties.includes(".")
+        ? property
+        : `${properties.substring(properties.indexOf(".") + 1)}.${property}`;
+      curTokenLevel[property] = update
+        ? JSON.parse(`{ 
+        "new-value": "${newValue}",
+        "path": "${path}",
+        "original-value": "${curOriginalLevel[property]}"
+        }`)
+        : JSON.parse(`{ 
+          "new-value": "${newValue}",
+          "path": "${path}"
+          }`);
+      return;
+    }
+    const nextProperties = properties + "." + property;
+    const keys = nextProperties.split(".");
+    curOriginalLevel = originalToken;
+    curTokenLevel = token;
+    keys.forEach((key) => {
+      if (curOriginalLevel[key] === undefined) {
+        if (
+          renamed[key] !== undefined &&
+          curOriginalLevel[renamed[key]["old-name"]] !== undefined
+        ) {
+          curOriginalLevel = curOriginalLevel[renamed[key]["old-name"]];
+        }
+      } else {
+        curOriginalLevel = curOriginalLevel[key];
+      }
+      curTokenLevel =
+        curTokenLevel[key] === undefined ? token : curTokenLevel[key];
+    });
+    includeOldProperties(
+      token,
+      curTokenLevel,
+      nextProperties,
+      originalToken,
+      curOriginalLevel,
+      renamed,
+      update,
+    );
+  });
 }
