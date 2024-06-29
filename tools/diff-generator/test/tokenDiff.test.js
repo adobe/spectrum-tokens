@@ -38,6 +38,7 @@ const expectedRenamed = {
   updated: {
     added: {},
     deleted: {},
+    renamed: {},
     updated: {},
   },
 };
@@ -70,6 +71,7 @@ const expectedManyAddedRenamed = {
   updated: {
     added: {},
     deleted: {},
+    renamed: {},
     updated: {},
   },
 };
@@ -122,6 +124,7 @@ const expectedRenamedAddedDeleted = {
   updated: {
     added: {},
     deleted: {},
+    renamed: {},
     updated: {},
   },
 };
@@ -162,6 +165,7 @@ const expectedSeveralRenamedAddedDeleted = {
   updated: {
     added: {},
     deleted: {},
+    renamed: {},
     updated: {},
   },
 };
@@ -213,6 +217,7 @@ const expectedSeveralRADDep = {
   updated: {
     added: {},
     deleted: {},
+    renamed: {},
     updated: {},
   },
 };
@@ -262,6 +267,7 @@ const expectedSeveralRADDepU = {
   updated: {
     added: {},
     deleted: {},
+    renamed: {},
     updated: {
       "thumbnail-border-color": {
         $schema: {
@@ -370,6 +376,7 @@ const expectedSeveralRADDepURev = {
   updated: {
     added: {},
     deleted: {},
+    renamed: {},
     updated: {
       "thumbnail-border-color": {
         $schema: {
@@ -457,6 +464,7 @@ const expectedAddedProperty = {
       },
     },
     deleted: {},
+    renamed: {},
     updated: {},
   },
 };
@@ -490,6 +498,7 @@ const expectedDeletedProperty = {
         },
       },
     },
+    renamed: {},
     updated: {},
   },
 };

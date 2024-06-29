@@ -10,7 +10,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 import { detailedDiff } from "deep-object-diff";
-import checkIfRenamed from "./renamed-token-detection.js";
+import detectRenamedTokens from "./renamed-token-detection.js";
 import detectNewTokens from "./added-token-detection.js";
 import detectDeletedTokens from "./deleted-token-detection.js";
 import detectDeprecatedTokens from "./deprecated-token-detection.js";
@@ -24,7 +24,7 @@ import detectUpdatedTokens from "./updated-token-detection.js";
  */
 export default function tokenDiff(original, updated) {
   const changes = detailedDiff(original, updated);
-  const renamedTokens = checkIfRenamed(original, changes.added);
+  const renamedTokens = detectRenamedTokens(original, changes.added);
   const deprecatedTokens = detectDeprecatedTokens(renamedTokens, changes);
   const newTokens = detectNewTokens(
     renamedTokens,

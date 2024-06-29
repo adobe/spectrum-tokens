@@ -26,6 +26,7 @@ export default function detectUpdatedTokens(
   deprecatedTokens,
 ) {
   const updatedTokens = {
+    renamed: {},
     added: {},
     deleted: {},
     updated: { ...changes.updated },
@@ -45,7 +46,14 @@ export default function detectUpdatedTokens(
       deprecatedTokens.deprecated[token] === undefined
     ) {
       updatedTokens.added[token] = changes.added[token];
-      formatJSON(updatedTokens.added[token], token, original, renamed, false);
+      formatJSON(
+        updatedTokens,
+        updatedTokens.added[token],
+        token,
+        original,
+        renamed,
+        false,
+      );
     }
   });
   Object.keys(changes.deleted).forEach((token) => {
@@ -56,11 +64,25 @@ export default function detectUpdatedTokens(
         original[token],
       ).updated;
       updatedTokens.deleted[token] = tokenDiff;
-      formatJSON(updatedTokens.deleted[token], token, original, renamed, false);
+      formatJSON(
+        updatedTokens,
+        updatedTokens.deleted[token],
+        token,
+        original,
+        renamed,
+        false,
+      );
     }
   });
   Object.keys(updatedTokens.updated).forEach((token) => {
-    formatJSON(updatedTokens.updated[token], token, original, renamed, true);
+    formatJSON(
+      updatedTokens,
+      updatedTokens.updated[token],
+      token,
+      original,
+      renamed,
+      true,
+    );
   });
   return updatedTokens;
 }
@@ -73,9 +95,17 @@ export default function detectUpdatedTokens(
  * @param {object} renamed - a JSON object containing the renamed tokens
  * @param {boolean} update - a boolean indicating whether token property is added, deleted, or updated
  */
-function formatJSON(tokens, properties, original, renamed, update) {
+function formatJSON(
+  updatedTokens,
+  tokens,
+  properties,
+  original,
+  renamed,
+  update,
+) {
   if (renamed[properties] !== undefined) {
     includeOldProperties(
+      updatedTokens,
       tokens,
       tokens,
       properties,
@@ -86,6 +116,7 @@ function formatJSON(tokens, properties, original, renamed, update) {
     );
   } else {
     includeOldProperties(
+      updatedTokens,
       tokens,
       tokens,
       properties,
@@ -107,6 +138,7 @@ function formatJSON(tokens, properties, original, renamed, update) {
  * @param {object} renamed - the renamed tokens
  */
 function includeOldProperties(
+  updatedTokens,
   token,
   curTokenLevel,
   properties,
@@ -158,7 +190,34 @@ function includeOldProperties(
       curTokenLevel =
         curTokenLevel[key] === undefined ? token : curTokenLevel[key];
     });
+    if (!update) {
+      Object.keys(curOriginalLevel).forEach((originalProp) => {
+        Object.keys(curTokenLevel).forEach((curProp) => {
+          if (
+            curTokenLevel[curProp] !== undefined &&
+            typeof curOriginalLevel[originalProp] !== "string" &&
+            typeof curTokenLevel[curProp] !== "string" &&
+            curOriginalLevel[originalProp].uuid !== undefined &&
+            curTokenLevel[curProp].uuid !== undefined &&
+            curOriginalLevel[originalProp].uuid ===
+              curTokenLevel[curProp].uuid &&
+            originalProp !== curProp
+          ) {
+            updatedTokens.renamed[curProp] = {
+              "old-name": originalProp,
+            };
+            delete curTokenLevel[curProp];
+          }
+          Object.keys(updatedTokens["renamed"]).forEach((prop) => {
+            if (updatedTokens["renamed"][prop]["old-name"] === curProp) {
+              delete curTokenLevel[curProp];
+            }
+          });
+        });
+      });
+    }
     includeOldProperties(
+      updatedTokens,
       token,
       curTokenLevel,
       nextProperties,
