@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en-GB" class="spectrum spectrum--medium spectrum--light">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <style>
+      body {
+        background: #fafafa;
+        margin: 0;
+        overflow-y: hidden;
+      }
+      .page {
+        display: flex;
+        height: 100vh;
+        width: 100vw;
+      }
+    </style>
+    <link rel="stylesheet" href="node_modules/@spectrum-css/typography/dist/index.css"/>
+  </head>
+  <body>
+    <div id="demo"></div>
+
+    <script type="module">
+      import { html, render } from 'lit';
+      import '../dist/src/token-diff.js';
+      import '../dist/src/nav-bar.js';
+      import '../dist/src/getting-started.js';
+      import '../dist/src/page-container.js';
+
+      render(
+        html`
+          <page-container></page-container>
+        `,
+        document.querySelector('#demo'),
+      );
+    </script>
+  </body>
+</html>
