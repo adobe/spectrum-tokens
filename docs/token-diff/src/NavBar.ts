@@ -71,10 +71,10 @@ export class NavBar extends LitElement {
   protected override render(): TemplateResult {
     return html`
       <div class="entire-bar">
-        <a class="logo-section" href="/demo/">
+        <a class="logo-section" href="/demo">
           <img class="logo" src="/src/assets/adobe_logo.svg" alt="adobe logo" />
           <div class="logo-text">
-            <sp-theme theme="spectrum" color="light" scale="medium">
+            <sp-theme system="spectrum" color="light" scale="medium">
               <h2
                 class="spectrum-Typography spectrum-Heading--sizeXXL logo-section"
               >
@@ -88,7 +88,7 @@ export class NavBar extends LitElement {
           <sp-sidenav defaultValue="Token diff generator" variant="multilevel">
             <sp-sidenav-item
               value="Token diff generator"
-              href="/demo/"
+              href="/demo"
               label="Token diff generator"
               @click=${this.__handleSelection}
             ></sp-sidenav-item>

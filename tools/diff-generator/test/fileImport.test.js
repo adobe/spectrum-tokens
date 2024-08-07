@@ -44,7 +44,7 @@ test("checking file import for two branches (both main)", async (t) => {
   });
 });
 
-test("checking cli output for two branches (shirlsli/diff-generator-cli and shirlsli/file-import-tests) for added color-component tokens", async (t) => {
+test("checking cli output for two branches (shirlsli/file-import-tests-1 and shirlsli/file-import-tests) for added color-component tokens", async (t) => {
   t.plan(1);
   return new Promise((resolve, reject) => {
     try {
@@ -62,7 +62,7 @@ test("checking cli output for two branches (shirlsli/diff-generator-cli and shir
           }
         })
         .run(
-          "pnpm tdiff report -otb shirlsli/diff-generator-cli -ntb shirlsli/file-import-tests -tn src/color-component.json",
+          "pnpm tdiff report -otb shirlsli/file-import-tests-1 -ntb shirlsli/file-import-tests -tn src/color-component.json",
         )
         .end(resolve);
     } catch (error) {
@@ -71,7 +71,7 @@ test("checking cli output for two branches (shirlsli/diff-generator-cli and shir
   });
 });
 
-test("checking cli output for two branches (shirlsli/diff-generator-cli and shirlsli/file-import-tests) for deleted layout tokens", async (t) => {
+test("checking cli output for two branches (shirlsli/file-import-tests-1 and shirlsli/file-import-tests) for deleted layout tokens", async (t) => {
   t.plan(1);
   return new Promise((resolve, reject) => {
     try {
@@ -89,7 +89,7 @@ test("checking cli output for two branches (shirlsli/diff-generator-cli and shir
           }
         })
         .run(
-          "pnpm tdiff report -otb shirlsli/diff-generator-cli -ntb shirlsli/file-import-tests -tn src/layout.json",
+          "pnpm tdiff report -otb shirlsli/file-import-tests-1 -ntb shirlsli/file-import-tests -tn src/layout.json",
         )
         .end(resolve);
     } catch (error) {
@@ -98,7 +98,7 @@ test("checking cli output for two branches (shirlsli/diff-generator-cli and shir
   });
 });
 
-test("checking cli output for two branches (shirlsli/diff-generator-cli and shirlsli/file-import-tests) for renamed, deprecated, added, deleted, and updated tokens", async (t) => {
+test("checking cli output for two branches (shirlsli/file-import-tests-1 and shirlsli/file-import-tests) for renamed, deprecated, added, deleted, and updated tokens", async (t) => {
   t.plan(1);
   return new Promise((resolve, reject) => {
     try {
@@ -116,7 +116,7 @@ test("checking cli output for two branches (shirlsli/diff-generator-cli and shir
           }
         })
         .run(
-          "pnpm tdiff report -otb shirlsli/diff-generator-cli -ntb shirlsli/file-import-tests",
+          "pnpm tdiff report -otb shirlsli/file-import-tests-1 -ntb shirlsli/file-import-tests",
         )
         .end(resolve);
     } catch (error) {

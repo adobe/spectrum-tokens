@@ -78,7 +78,7 @@ program
               ),
             ]);
       const result = tokenDiff(originalFile, updatedFile);
-      cliCheck(originalFile, result, options);
+      cliCheck(result, options);
     } catch (e) {
       console.error(red("\n" + e + "\n"));
     }
@@ -153,11 +153,10 @@ const printStyleUpdated = (result, token, log, i) => {
 /**
  * Checks for previously deprecated tokens whose deprecated status is removed and asks
  * the user if that is intended
- * @param {object} originalFile - the original token
  * @param {object} result - the updated token report
  * @param {object} options - an array holding the values of options inputted from command line
  */
-async function cliCheck(originalFile, result, options) {
+async function cliCheck(result, options) {
   const log = console.log;
   log(
     red(
@@ -191,7 +190,12 @@ async function cliCheck(originalFile, result, options) {
       ])
       .then((response) => {
         if (response.confirmation) {
-          console.clear();
+          // console.clear();
+          log(
+            white(
+              "\n-------------------------------------------------------------------------------------------",
+            ),
+          );
           return printReport(result, log, options);
         } else {
           log(

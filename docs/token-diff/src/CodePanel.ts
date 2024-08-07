@@ -20,6 +20,7 @@ import '@spectrum-web-components/tabs/sp-tabs.js';
 import '@spectrum-web-components/tabs/sp-tab.js';
 import '@spectrum-web-components/tabs/sp-tab-panel.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-copy.js';
+import '@spectrum-web-components/toast/sp-toast.js';
 
 export class CodePanel extends LitElement {
   static styles = css`
@@ -43,6 +44,11 @@ export class CodePanel extends LitElement {
       flex-wrap: wrap;
       white-space: pre-wrap;
       word-wrap: break-word;
+    }
+    sp-toast {
+      position: fixed;
+      top: 1em;
+      right: 1em;
     }
     pre {
       margin-bottom: 10px;
@@ -131,7 +137,17 @@ export class CodePanel extends LitElement {
             : this.__regularCodeSnippetDisplay(this.codeSnippet)}
         </div>
         <div>
-          <sp-theme class="theme" scale="medium" color="light">
+          <sp-theme
+            class="theme"
+            system="spectrum"
+            scale="medium"
+            color="light"
+          >
+            <sp-overlay trigger="trigger@click" type="auto">
+              <sp-toast open variant="info">
+                The code snippet has been copied to your clipboard!
+              </sp-toast>
+            </sp-overlay>
             <sp-action-button
               class="copy-button"
               quiet

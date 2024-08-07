@@ -138,19 +138,9 @@ export class PageContainer extends LitElement {
   firstUpdated() {
     const router = new Router(this.shadowRoot!.querySelector('#outlet'));
     router.setRoutes([
-      // { path: `/demo/`, component: 'token-diff' },
       { path: `/demo/:object?`, component: 'token-diff' },
       { path: '/getting-started', component: 'getting-started' },
     ]);
-  }
-
-  @property({ type: String }) url = '/demo/';
-
-  __reportListener(e: CustomEvent) {
-    // console.log("did it go off?");
-    this.url = e.detail;
-    // this.router.setParameter()
-    console.log(this.url);
   }
 
   protected override render(): TemplateResult {
@@ -159,7 +149,7 @@ export class PageContainer extends LitElement {
         <header>
           <sp-theme
             class="header"
-            theme="spectrum"
+            system="spectrum"
             color="light"
             scale="medium"
           >
@@ -175,7 +165,7 @@ export class PageContainer extends LitElement {
         </header>
         </div>
         <sp-theme
-            theme="spectrum"
+            system="spectrum"
             color="light"
             scale="medium"
           >
@@ -187,7 +177,7 @@ export class PageContainer extends LitElement {
             </sp-popover>
           </sp-overlay>
           <div class="right">
-            <div @urlChange=${this.__reportListener} id="outlet"></div>
+            <div id="outlet"></div>
             <sp-divider class="divider" size="m"></sp-divider>
             <footer>
               <ul class="footer-group">
