@@ -6,7 +6,6 @@
     "noEmitOnError": true,
     "lib": ["es2021", "dom", "DOM.Iterable"],
     "strict": true,
-    "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "importHelpers": true,
@@ -16,7 +15,13 @@
     "rootDir": "./",
     "declaration": true,
     "incremental": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "noImplicitAny": false
   },
-  "include": ["**/*.ts", "src/typekit.js"]
+  "include": ["**/*.ts", "src/typekit.js"],
+  "typeRoots": [
+    "node_modules/@types"
+  ]
 }

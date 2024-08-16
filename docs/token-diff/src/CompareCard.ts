@@ -20,27 +20,10 @@ import '@spectrum-web-components/icons-workflow/icons/sp-icon-box.js';
 import '@spectrum-web-components/theme/sp-theme.js';
 import '@spectrum-web-components/theme/src/themes.js';
 import { property } from 'lit/decorators.js';
-import { githubAPIKey } from '../github-api-key.js';
-
-interface Branch {
-  name: string;
-  commit: {
-    sha: string;
-    url: string;
-  };
-  protected: boolean;
-}
-
-interface Tag {
-  commit: {
-    sha: string;
-    url: string;
-  };
-  name: string;
-  node_id: string;
-  tarball_url: string;
-  zipball_url: string;
-}
+import {
+  fetchBranchTagOptions,
+  fetchSchemaOptions,
+} from './fetchFromGithub.js';
 
 export class CompareCard extends LitElement {
   static styles = css`
@@ -113,82 +96,79 @@ export class CompareCard extends LitElement {
   constructor(heading: string) {
     super();
     this.heading = heading;
-    this.__fetchBranchTagOptions('Github branch');
-    this.__fetchBranchTagOptions('Package release');
+  }
+
+  async firstUpdated() {
+    this.branchOptions = await fetchBranchTagOptions('branch');
+    this.tagOptions = await fetchBranchTagOptions('tag');
+    const currentUrl = window.location.href;
+    const firstQuestionMark = currentUrl.indexOf('?');
+    if (firstQuestionMark > 0) {
+      const parameters = currentUrl.substring(firstQuestionMark + 1);
+      const paramSplit = parameters.split('&');
+      if (this.heading === 'Version A') {
+        this.branchOrTag = paramSplit[0]
+          .substring(paramSplit[0].indexOf('=') + 1)
+          .replaceAll('%20', ' ')
+          .replaceAll('%40', '@');
+        this.schema = paramSplit[2]
+          .substring(paramSplit[2].indexOf('=') + 1)
+          .replaceAll('%20', ' ')
+          .replaceAll('%40', '@');
+      } else {
+        this.branchOrTag = paramSplit[1]
+          .substring(paramSplit[1].indexOf('=') + 1)
+          .replaceAll('%20', ' ')
+          .replaceAll('%40', '@');
+        this.schema = paramSplit[3]
+          .substring(paramSplit[3].indexOf('=') + 1)
+          .replaceAll('%20', ' ')
+          .replaceAll('%40', '@');
+      }
+      this.toggle = this.branchOptions.includes(this.branchOrTag)
+        ? 'Github branch'
+        : 'Package release';
+    }
+    if (this.toggle === 'Github branch') {
+      this.toggle = 'Github branch';
+      this.branchSchemaOptions = await fetchSchemaOptions(
+        'branch',
+        this.branchOrTag,
+      );
+      this.tagSchemaOptions = await fetchSchemaOptions(
+        'tag',
+        this.tagOptions[0],
+      );
+      const branchToggle = this.shadowRoot?.getElementById('branch-toggle');
+      if (branchToggle) {
+        branchToggle.setAttribute('selected', '');
+      }
+    } else {
+      this.toggle = 'Package release';
+      this.branchSchemaOptions = await fetchSchemaOptions(
+        'branch',
+        this.branchOptions[0],
+      );
+      this.tagSchemaOptions = await fetchSchemaOptions('tag', this.branchOrTag);
+      const tagToggle = this.shadowRoot?.getElementById('tag-toggle');
+      if (tagToggle) {
+        tagToggle.setAttribute('selected', '');
+      }
+    }
   }
 
   __setGithubBranchToggle() {
     this.toggle = 'Github branch';
+    this.branchOrTag = this.branchOptions[0];
     this.__handleSelection(this.branchOptions[0]);
     this.__handleSelection(this.branchSchemaOptions[0]);
   }
 
   __setReleaseToggle() {
     this.toggle = 'Package release';
+    this.branchOrTag = this.tagOptions[0];
     this.__handleSelection(this.tagOptions[0]);
     this.__handleSelection(this.tagSchemaOptions[0]);
-  }
-
-  async __fetchBranchTagOptions(type: string) {
-    let oldOptions: string[] = [];
-    if (type === 'Github branch') {
-      oldOptions = this.branchOptions;
-      this.branchOptions = [];
-      const url = 'https://api.github.com/repos/adobe/spectrum-tokens/branches';
-      await fetch(url, {
-        method: 'GET',
-        headers: {
-          Authorization: `token ${githubAPIKey}`,
-        },
-      }).then(async response => {
-        const branches = await response.json();
-        this.__updateOptions(branches, this.branchOptions, oldOptions);
-      });
-    } else {
-      oldOptions = this.tagOptions;
-      this.tagOptions = [];
-      const url = 'https://api.github.com/repos/adobe/spectrum-tokens/tags';
-      await fetch(url, {
-        method: 'GET',
-        headers: {
-          Authorization: `token ${githubAPIKey}`,
-        },
-      }).then(async response => {
-        const tags = await response.json();
-        this.__updateOptions(tags, this.tagOptions, oldOptions);
-      });
-    }
-    await this.__fetchSchemaOptions();
-    this.__handleSelection(this.branchOrTag);
-    this.__handleSelection(this.schema);
-  }
-
-  async __fetchSchemaOptions() {
-    const source = 'https://raw.githubusercontent.com/adobe/spectrum-tokens/';
-    const url =
-      this.toggle !== 'Github branch'
-        ? source + '%40adobe/spectrum-tokens%40' + this.branchOrTag
-        : source + this.branchOrTag;
-    this.branchSchemaOptions = await this.__fetchTokens('manifest.json', url);
-    this.branchSchemaOptions.unshift('all');
-    this.tagSchemaOptions = await this.__fetchTokens('manifest.json', url);
-    this.tagSchemaOptions.unshift('all');
-  }
-
-  async __fetchTokens(tokenName: string, url: string) {
-    return (await fetch(`${url}/packages/tokens/${tokenName}`)).json();
-  }
-
-  __updateOptions(
-    jsonObject: Branch | Tag,
-    branchOrTagArr: string[],
-    oldBranchTagOptions: string[],
-  ) {
-    Object.values(jsonObject).forEach((entry: Branch | Tag) => {
-      const { name } = entry;
-      branchOrTagArr.push(name);
-    });
-    this.requestUpdate('branchOrTagArr', oldBranchTagOptions);
   }
 
   __createMenuItem(options: string[], showIcons: boolean) {
@@ -242,7 +222,6 @@ export class CompareCard extends LitElement {
       bubbles: true,
       composed: true,
     };
-    console.log('dispatching: ', option);
     this.dispatchEvent(new CustomEvent('selection', options));
   }
 
@@ -267,43 +246,60 @@ export class CompareCard extends LitElement {
       <div class="card">
         <div class="container">
           <div class="label section">${this.heading}</div>
-          <sp-theme scale="medium" color="light">
+          <sp-theme system="spectrum" scale="medium" color="light">
             <sp-action-group compact selects="single" class="section">
               <sp-action-button
                 toggles
-                selected
                 @click=${this.__setGithubBranchToggle}
+                id="branch-toggle"
               >
                 Github branch
               </sp-action-button>
-              <sp-action-button toggles @click=${this.__setReleaseToggle}>
+              <sp-action-button
+                toggles
+                @click=${this.__setReleaseToggle}
+                id="tag-toggle"
+              >
                 Package release
               </sp-action-button>
             </sp-action-group>
             <sp-picker
               class="picker section"
               label=${this.toggle === 'Github branch'
-                ? this.branchOptions[0]
-                : this.tagOptions[0]}
+                ? this.branchOptions[
+                    this.branchOptions.indexOf(this.branchOrTag)
+                  ]
+                : this.tagOptions[this.tagOptions.indexOf(this.branchOrTag)]}
               value=${this.toggle === 'Github branch'
-                ? this.branchOptions[0]
-                : this.tagOptions[0]}
+                ? this.branchOptions[
+                    this.branchOptions.indexOf(this.branchOrTag)
+                  ]
+                : this.tagOptions[this.tagOptions.indexOf(this.branchOrTag)]}
             >
               ${this.toggle === 'Github branch'
                 ? this.__createMenuItem(this.branchOptions, true)
                 : this.__createMenuItem(this.tagOptions, true)}
             </sp-picker>
             <sp-field-label for="schemaSelection" size="m"
-              >Schema</sp-field-label
+              >Token File</sp-field-label
             >
             <sp-picker
               class="picker"
               label=${this.toggle === 'Github branch'
-                ? this.branchSchemaOptions[0]
-                : this.tagSchemaOptions[0]}
+                ? this.branchSchemaOptions[
+                    this.branchSchemaOptions.indexOf(this.schema)
+                  ]
+                : this.tagSchemaOptions[
+                    this.tagSchemaOptions.indexOf(this.schema)
+                  ]}
               value=${this.toggle === 'Github branch'
-                ? this.branchSchemaOptions[0]
-                : this.tagSchemaOptions[0]}
+                ? this.branchSchemaOptions[
+                    this.branchSchemaOptions.indexOf(this.schema)
+                  ]
+                : this.tagSchemaOptions[
+                    this.tagSchemaOptions.indexOf(this.schema)
+                  ]}
+              id="schema-picker"
             >
               ${this.toggle === 'Github branch'
                 ? this.__createMenuItem(this.branchSchemaOptions, false)

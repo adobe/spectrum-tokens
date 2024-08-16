@@ -20,7 +20,12 @@ import './compare-card.js';
 import './DiffReport.js';
 import './diff-report.js';
 import { DiffReport } from './DiffReport.js';
-// import { tokenDiff } from '@adobe/token-diff-generator/src/lib/index.js';
+import {
+  fetchBranchTagOptions,
+  fetchSchemaOptions,
+} from './fetchFromGithub.js';
+import tokenDiff from '@adobe/token-diff-generator/src/lib/index.js';
+import { fileImport } from './fetchFromGithub.js';
 
 export class TokenDiff extends LitElement {
   static styles = css`
@@ -60,6 +65,18 @@ export class TokenDiff extends LitElement {
       margin-top: 40px;
       margin-bottom: 65px;
     }
+    .skeleton {
+      animation: skeleton-loading 1s linear infinite alternate;
+    }
+
+    @keyframes skeleton-loading {
+      0% {
+        background-color: hsl(200, 20%, 80%);
+      }
+      100% {
+        background-color: hsl(200, 20%, 95%);
+      }
+    }
     @media only screen and (max-width: 1100px) {
       :host {
         overflow-x: auto;
@@ -80,6 +97,10 @@ export class TokenDiff extends LitElement {
   @property({ type: String }) updatedSchema = '';
   @property({ type: String }) originalVers = '';
   @property({ type: String }) updatedVers = '';
+  @property({ type: Array }) branchOptions: string[] = [];
+  @property({ type: Array }) tagOptions: string[] = [];
+  @property({ type: Array }) branchSchemaOptions: string[] = [];
+  @property({ type: Array }) tagSchemaOptions: string[] = [];
 
   __originalCardListener(e: CustomEvent) {
     this.__updatedProperty(true, e.detail);
@@ -108,148 +129,118 @@ export class TokenDiff extends LitElement {
     this.__updatedProperty(false, e.detail);
   }
 
-  __generateReport() {
-    // call token diff generator library
+  async __generateReport() {
+    const compareButton = this.shadowRoot?.getElementById('compareButton');
+    compareButton?.classList.add('skeleton', 'skeleton-loading');
     const report = this.shadowRoot?.getElementById('report')!;
     if (report.firstChild) {
       report.removeChild(report.firstChild);
     }
+    const originalSchemaName: string[] = [this.originalSchema];
+    const updatedSchemaName: string[] = [this.updatedSchema];
+    const [originalSchema, updatedSchema] = await Promise.all([
+      fileImport(
+        originalSchemaName,
+        this.originalVers === 'branch' ? undefined : this.originalBranchOrTag,
+        this.originalVers === 'branch' ? this.originalBranchOrTag : undefined,
+      ),
+      fileImport(
+        updatedSchemaName,
+        this.updatedVers === 'branch' ? undefined : this.updatedBranchOrTag,
+        this.updatedVers === 'branch' ? this.updatedBranchOrTag : undefined,
+      ),
+    ]);
+    const reportJSON = await tokenDiff(originalSchema, updatedSchema);
     const diffReport = document.createElement('diff-report') as DiffReport;
-    diffReport.tokenDiffJSON = this.jsonObj;
+    diffReport.tokenDiffJSON = reportJSON;
+    this.originalBranchOrTag =
+      this.originalBranchOrTag === undefined
+        ? 'beta'
+        : this.originalBranchOrTag;
+    this.updatedBranchOrTag =
+      this.updatedBranchOrTag === undefined ? 'beta' : this.updatedBranchOrTag;
     diffReport.originalBranchOrTag = this.originalBranchOrTag;
     diffReport.updatedBranchOrTag = this.updatedBranchOrTag;
     diffReport.originalSchema = this.originalSchema;
     diffReport.updatedSchema = this.updatedSchema;
-    let encodedObject = encodeURIComponent(JSON.stringify(this.jsonObj));
     let url = new URL(
-      'http://localhost:8000' + '/demo/object=' + encodedObject,
+      'http://localhost:8000' +
+        '/demo?original_branch_tag=' +
+        this.originalBranchOrTag +
+        '&updated_branch_tag=' +
+        this.updatedBranchOrTag +
+        '&original_schema=' +
+        this.originalSchema +
+        '&updated_schema=' +
+        this.updatedSchema,
     );
     diffReport.url = url.href;
-    if (report) {
-      report.appendChild(diffReport);
-      let options = {
-        detail: url.href,
-        bubbles: true,
-        composed: true,
-      };
-      this.dispatchEvent(new CustomEvent('urlChange', options));
-      window.history.pushState(this.jsonObj, 'Report', url.href);
-    }
+    setTimeout(() => {
+      if (report) {
+        report.appendChild(diffReport);
+        let options = {
+          detail: url.href,
+          bubbles: true,
+          composed: true,
+        };
+        this.dispatchEvent(new CustomEvent('urlChange', options));
+        window.history.pushState(reportJSON, 'Report', url.href);
+        compareButton?.classList.remove('skeleton', 'skeleton-loading');
+      }
+    }, 1000);
   }
 
-  @property({ type: Object }) jsonObj = {
-    added: {
-      'i-like-pizza': {
-        component: 'table',
-        $schema:
-          'https://opensource.adobe.com/spectrum-tokens/schemas/token-types/opacity.json',
-        value: '0.07',
-        uuid: '1234',
-      },
-      'hi-how-are-you': {
-        component: 'color-handle',
-        $schema:
-          'https://opensource.adobe.com/spectrum-tokens/schemas/token-types/opacity.json',
-        value: '0.42',
-        uuid: '234',
-      },
-    },
-    deleted: {
-      'floating-action-button-drop-shadow-color': undefined,
-      'floating-action-button-shadow-color': undefined,
-      'table-selected-row-background-opacity-non-emphasized-hover': undefined,
-      'table-selected-row-background-opacity-non-emphasized': undefined,
-    },
-    deprecated: {
-      'color-slider-border-color': {
-        deprecated: true,
-        deprecated_comment: 'insert random deprecated comment',
-      },
-      'color-loupe-outer-border': {
-        deprecated: true,
-        deprecated_comment: 'insert random deprecated comment',
-      },
-    },
-    reverted: {
-      'color-handle-drop-shadow-color': {
-        deprecated: undefined,
-        deprecated_comment: undefined,
-      },
-    },
-    renamed: {
-      'i-like-ice-cream': {
-        'old-name': 'color-area-border-color',
-      },
-      'i-like-char-siu': {
-        'old-name': 'color-handle-inner-border-color',
-      },
-    },
-    updated: {
-      added: {},
-      deleted: {},
-      renamed: {},
-      updated: {
-        'thumbnail-border-color': {
-          $schema: {
-            'new-value':
-              'https://opensource.adobe.com/spectrum-tokens/schemas/token-types/not-a-thumbnail.json',
-            'original-value':
-              'https://opensource.adobe.com/spectrum-tokens/schemas/token-types/alias.json',
-            path: '$schema',
-          },
-        },
-        'opacity-checkerboard-square-dark': {
-          sets: {
-            light: {
-              value: {
-                'new-value': '{gray-500}',
-                'original-value': '{gray-200}',
-                path: 'sets.light.value',
-              },
-            },
-            darkest: {
-              value: {
-                'new-value': '{gray-900}',
-                'original-value': '{gray-800}',
-                path: 'sets.darkest.value',
-              },
-            },
-          },
-        },
-        'color-slider-border-opacity': {
-          component: {
-            'new-value': 'not-a-color-slider',
-            'original-value': 'color-slider',
-            path: 'component',
-          },
-        },
-        'color-loupe-inner-border': {
-          uuid: {
-            'new-value': 'if a uuid ever change lol',
-            'original-value': 'd2c4cb48-8a90-461d-95bc-d882ba01472b',
-            path: 'uuid',
-          },
-        },
-        'drop-zone-background-color': {
-          component: {
-            'new-value': 'woohoo!',
-            'original-value': 'drop-zone',
-            path: 'component',
-          },
-          value: {
-            'new-value': '{fushcia pink}',
-            'original-value': '{accent-visual-color}',
-            path: 'value',
-          },
-        },
-      },
-    },
-  };
+  async firstUpdated() {
+    const currentUrl = window.location.href;
+    const firstQuestionMark = currentUrl.indexOf('?');
+    this.branchOptions = await fetchBranchTagOptions('branch');
+    this.branchSchemaOptions = await fetchSchemaOptions(
+      'branch',
+      this.branchOptions[0],
+    );
+    if (firstQuestionMark > 0) {
+      const parameters = currentUrl.substring(firstQuestionMark + 1);
+      const paramSplit = parameters.split('&');
+      this.originalBranchOrTag = paramSplit[0]
+        .substring(paramSplit[0].indexOf('=') + 1)
+        .replaceAll('%20', ' ')
+        .replaceAll('%40', '@');
+      this.originalVers = this.branchOptions.includes(this.originalBranchOrTag)
+        ? 'branch'
+        : 'tag';
+      this.updatedBranchOrTag = paramSplit[1]
+        .substring(paramSplit[1].indexOf('=') + 1)
+        .replaceAll('%20', ' ')
+        .replaceAll('%40', '@');
+      this.updatedVers = this.branchOptions.includes(this.updatedBranchOrTag)
+        ? 'branch'
+        : 'tag';
+      this.originalSchema = paramSplit[2]
+        .substring(paramSplit[2].indexOf('=') + 1)
+        .replaceAll('%20', ' ')
+        .replaceAll('%40', '@');
+      this.updatedSchema = paramSplit[3]
+        .substring(paramSplit[3].indexOf('=') + 1)
+        .replaceAll('%20', ' ')
+        .replaceAll('%40', '@');
+      this.__generateReport();
+    } else {
+      this.originalBranchOrTag = this.updatedBranchOrTag =
+        this.branchOptions[0];
+      this.originalSchema = this.updatedSchema = this.branchSchemaOptions[0];
+    }
+    this.originalVers = this.branchOptions.includes(this.originalBranchOrTag)
+      ? 'branch'
+      : 'tag';
+    this.updatedVers = this.branchOptions.includes(this.updatedBranchOrTag)
+      ? 'branch'
+      : 'tag';
+  }
 
   protected override render(): TemplateResult {
     return html`
       <div>
-        <sp-theme theme="spectrum" color="light" scale="medium">
+        <sp-theme system="spectrum" color="light" scale="medium">
           <div
             class="title spectrum-Typography spectrum-Heading--sizeXXL spectrum-Heading--serif"
           >
@@ -275,8 +266,12 @@ export class TokenDiff extends LitElement {
               @click=${this.__generateReport}
               variant="accent"
               size="m"
+              id="compareButton"
             >
-              <sp-icon-compare slot="icon"></sp-icon-compare>
+              <sp-icon-compare
+                class="compare-icon"
+                slot="icon"
+              ></sp-icon-compare>
               Compare
             </sp-button>
           </div>
