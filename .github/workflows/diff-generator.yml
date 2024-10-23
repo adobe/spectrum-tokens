@@ -1,0 +1,11 @@
+on: pull_request
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    name: Generate token diff report
+    steps:
+      - name: PR comment with file
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: ../tools/diff-generator/src/lib/reports/report.txt
