@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <script>
-    // Redirect schema paths and any other paths
+    // Redirect schema paths and any other paths, stripping /spectrum-tokens prefix
     const path = window.location.pathname;
-    const newUrl = 'https://opensource.adobe.com/spectrum-design-data' + path;
+    const strippedPath = path.replace(/^\/spectrum-tokens/, '');
+    const newUrl = 'https://opensource.adobe.com/spectrum-design-data' + strippedPath;
     window.location.replace(newUrl);
   </script>
   <meta http-equiv="refresh" content="0; url=https://opensource.adobe.com/spectrum-design-data/">
